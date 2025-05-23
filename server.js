@@ -12,7 +12,10 @@ const pool = mysql.createPool({
   database: process.env.DB_NAME,
   waitForConnections: true,
   connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT || "10"),
-  queueLimit: 0
+  queueLimit: 0,
+  ssl: {
+    ca: fs.readFileSync('/ca.pem')
+  }
 });
 app.post('/mark-preference', async (req, res) => {
   const { application_number, name, category, college_preference, marks } = req.body;

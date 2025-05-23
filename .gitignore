@@ -1,3 +1,5 @@
 .env
 /m.py
 node_modules/
+/ca.pem
+/g.py
