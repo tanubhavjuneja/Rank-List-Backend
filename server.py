@@ -3,13 +3,10 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 import pymysql
 import os
-
 load_dotenv()
 app = Flask(__name__)
 CORS(app)
-
-timeout = 10  # seconds
-
+timeout = 10  
 def get_db_connection():
     return pymysql.connect(
         host=os.environ.get("DB_HOST"),
@@ -23,7 +20,6 @@ def get_db_connection():
         write_timeout=timeout,
         cursorclass=pymysql.cursors.DictCursor
     )
-
 @app.route('/mark-preference', methods=['POST'])
 def mark_preference():
     data = request.get_json()
@@ -32,16 +28,13 @@ def mark_preference():
     category = data.get('category')
     college_preference = data.get('college_preference')
     marks = data.get('marks')
-
     if not all([application_number, name, category, college_preference]) or marks is None:
         return jsonify({"error": "Missing required fields"}), 400
-
     try:
         conn = get_db_connection()
         with conn.cursor() as cursor:
             cursor.execute("SELECT application_number FROM users WHERE application_number = %s", (application_number,))
             result = cursor.fetchone()
-
             if result is None:
                 cursor.execute(
                     "INSERT INTO users (application_number, name, category, uni_code, marks) VALUES (%s, %s, %s, %s, %s)",
@@ -52,19 +45,16 @@ def mark_preference():
                     "UPDATE users SET category = %s, uni_code = %s, marks = %s WHERE application_number = %s",
                     (category, college_preference, marks, application_number)
                 )
-
             conn.commit()
         conn.close()
         return jsonify({"message": "Preference submitted successfully"})
     except Exception as e:
         print("DB error:", e)
         return jsonify({"error": "Database error"}), 500
-
 @app.route('/ranks', methods=['GET'])
 def get_ranks():
     limit = int(request.args.get('limit', 100))
     offset = int(request.args.get('offset', 0))
-
     try:
         conn = get_db_connection()
         with conn.cursor() as cursor:
@@ -82,6 +72,5 @@ def get_ranks():
     except Exception as e:
         print("DB error:", e)
         return jsonify({"error": "Database error"}), 500
-
 if __name__ == '__main__':
     app.run(host="0.0.0.0",port=5000, debug=True)
