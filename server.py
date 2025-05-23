@@ -28,8 +28,12 @@ def mark_preference():
     category = data.get('category')
     college_preference = data.get('college_preference')
     marks = data.get('marks')
+    university_of_graduation = data.get('university_of_graduation')  # optional
+    domicile_state = data.get('domicile_state')  # optional
+
     if not all([application_number, name, category, college_preference]) or marks is None:
         return jsonify({"error": "Missing required fields"}), 400
+
     try:
         conn = get_db_connection()
         with conn.cursor() as cursor:
@@ -37,13 +41,17 @@ def mark_preference():
             result = cursor.fetchone()
             if result is None:
                 cursor.execute(
-                    "INSERT INTO users (application_number, name, category, uni_code, marks) VALUES (%s, %s, %s, %s, %s)",
-                    (application_number, name, category, college_preference, marks)
+                    """INSERT INTO users 
+                    (application_number, name, category, uni_code, marks, university_of_graduation, domicile_state) 
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+                    (application_number, name, category, college_preference, marks, university_of_graduation, domicile_state)
                 )
             else:
                 cursor.execute(
-                    "UPDATE users SET category = %s, uni_code = %s, marks = %s WHERE application_number = %s",
-                    (category, college_preference, marks, application_number)
+                    """UPDATE users SET category = %s, uni_code = %s, marks = %s, 
+                    university_of_graduation = %s, domicile_state = %s 
+                    WHERE application_number = %s""",
+                    (category, college_preference, marks, university_of_graduation, domicile_state, application_number)
                 )
             conn.commit()
         conn.close()
