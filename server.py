@@ -73,4 +73,4 @@ def get_ranks():
         print("DB error:", e)
         return jsonify({"error": "Database error"}), 500
 if __name__ == '__main__':
-    app.run(host="0.0.0.0",port=5000, debug=True)
+    app.run(host="0.0.0.0",port=11540, debug=True)
