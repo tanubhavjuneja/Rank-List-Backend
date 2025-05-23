@@ -3,3 +3,7 @@
 node_modules/
 /ca.pem
 /g.py
+web/
+/server.js
+/package.json
+/package-lock.json
