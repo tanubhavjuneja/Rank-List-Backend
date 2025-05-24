@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import threading
+import requests
 from dotenv import load_dotenv
 import pymysql
 import os
@@ -20,6 +22,9 @@ def get_db_connection():
         write_timeout=timeout,
         cursorclass=pymysql.cursors.DictCursor
     )
+@app.route('/')
+def home():
+    return "Server is alive!"
 @app.route('/mark-preference', methods=['POST'])
 def mark_preference():
     data = request.get_json()
@@ -28,12 +33,10 @@ def mark_preference():
     category = data.get('category')
     college_preference = data.get('college_preference')
     marks = data.get('marks')
-    university_of_graduation = data.get('university_of_graduation')  # optional
-    domicile_state = data.get('domicile_state')  # optional
-
+    university_of_graduation = data.get('university_of_graduation') 
+    domicile_state = data.get('domicile_state') 
     if not all([application_number, name, category, college_preference]) or marks is None:
         return jsonify({"error": "Missing required fields"}), 400
-
     try:
         conn = get_db_connection()
         with conn.cursor() as cursor:
@@ -80,6 +83,15 @@ def get_ranks():
     except Exception as e:
         print("DB error:", e)
         return jsonify({"error": "Database error"}), 500
+def keep_server_awake():
+    def ping():
+        try:
+            requests.get("https://rank-list-backend.onrender.com/")
+        except Exception as e:
+            print(f"Ping failed: {e}")
+        threading.Timer(60, ping).start()
+    ping()
 if __name__ == '__main__':
+    keep_server_awake()
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
